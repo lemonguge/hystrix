@@ -51,6 +51,9 @@ public abstract class SlideWindow<T> {
             } else {
                 index++;
             }
+            if (arr[index] != null) {
+                arr[index].onExpire();
+            }
             arr[index] = bucket.next();
             long now = System.currentTimeMillis();
             long ttl = now - liveTime;

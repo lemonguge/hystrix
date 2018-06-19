@@ -52,4 +52,21 @@ public abstract class Bucket<T> {
     protected void onCompleteException(long ttl, Exception ex) {
         // 静默处理
     }
+
+    public final void onExpire() {
+        try {
+            container.onExpire();
+        } catch (Exception ex) {
+            onExpireException(ex);
+        }
+    }
+
+    /**
+     * 不要抛出异常，否则导致滑动窗口有问题
+     *
+     * @param ex
+     */
+    protected void onExpireException(Exception ex) {
+        // 静默处理
+    }
 }
