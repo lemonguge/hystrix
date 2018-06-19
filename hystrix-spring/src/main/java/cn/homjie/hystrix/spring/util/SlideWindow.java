@@ -34,9 +34,15 @@ public abstract class SlideWindow<T> {
         liveTime = System.currentTimeMillis();
     }
 
+    /**
+     * @param t 保证只被当前bucket处理
+     */
     public abstract void put(T t);
 
-    protected void unsafeKeepNext() {
+    /**
+     * 当前bucket切换，保持滑动窗口连续
+     */
+    protected void safeKeepNext() {
         wLock.lock();
         try {
             Bucket<T> bucket = arr[index];
@@ -46,15 +52,20 @@ public abstract class SlideWindow<T> {
                 index++;
             }
             arr[index] = bucket.next();
-            liveTime = System.currentTimeMillis();
-            onUnsafeNext();
-            bucket.getListener().onComplete();
+            long now = System.currentTimeMillis();
+            long ttl = now - liveTime;
+            liveTime = now;
+            onSafeNext();
+            bucket.onComplete(ttl);
         } finally {
             wLock.unlock();
         }
     }
 
-    protected void onUnsafeNext() {
+    /**
+     * 切换新的bucket时触发
+     */
+    protected void onSafeNext() {
     }
 
 }

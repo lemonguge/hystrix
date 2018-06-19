@@ -5,6 +5,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 时间和容量 滑动窗口
+ *
  * @author jiehong.jh
  * @date 2018/4/27
  */
@@ -16,6 +18,13 @@ public class CacheSlideWindow<T> extends CountSlideWindow<T> {
 
     private ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
 
+    /**
+     * @param length bucket个数
+     * @param head
+     * @param max    每个bucket容量
+     * @param time   每个bucket存活时间
+     * @param unit
+     */
     public CacheSlideWindow(int length, Bucket<T> head, int max, long time, TimeUnit unit) {
         super(length, head, max);
         this.time = time;
@@ -29,7 +38,7 @@ public class CacheSlideWindow<T> extends CountSlideWindow<T> {
         try {
             if (System.currentTimeMillis() >= window + liveTime) {
                 count.set(0);
-                unsafeKeepNext();
+                safeKeepNext();
             }
         } finally {
             wLock.unlock();
@@ -37,7 +46,7 @@ public class CacheSlideWindow<T> extends CountSlideWindow<T> {
     }
 
     @Override
-    protected void onUnsafeNext() {
+    protected void onSafeNext() {
         executor.schedule(this::keepNext, time, unit);
     }
 }
